@@ -1,6 +1,7 @@
 import torch
 from models.AlexNet import AlexNet
 from models.GoogLeNet import GoogLeNet
+from models.PlainNet import PlainNet
 from utils.train_utils import Trainer
 from datasets.cifar10 import get_dataloaders
 
@@ -14,7 +15,7 @@ def main():
     train_loader, test_loader, train_dataset, test_dataset = get_dataloaders(128)
 
     # 初始化模型、优化器
-    model = GoogLeNet(num_classes=10).to(device)
+    model = PlainNet(num_classes=10).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     # 实例化Trainer并开始训练
