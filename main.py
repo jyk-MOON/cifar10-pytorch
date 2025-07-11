@@ -6,7 +6,7 @@ from datasets.cifar10 import get_dataloaders
 def main():
     # 配置
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    epochs = 10
+    epochs = 100
     learning_rate = 0.001
 
     # 加载数据
