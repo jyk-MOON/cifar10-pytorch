@@ -40,7 +40,7 @@ class Inception(nn.Module):
         return torch.cat([branch1, branch2, branch3, branch4], 1)
 
 # GoogLeNet主结构
-#  每个Inception模块会把输入同时传入四个不同的路径（分支），这四个路径是并行计算的，之后再将它们的输出在通道维度拼接起来
+# 每个Inception模块会把输入同时传入四个不同的路径（分支），这四个路径是并行计算的，之后再将它们的输出在通道维度拼接起来
 class GoogLeNet(nn.Module):
     def __init__(self, num_classes=10):
         super(GoogLeNet, self).__init__()
