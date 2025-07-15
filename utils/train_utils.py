@@ -4,13 +4,14 @@ import torch.nn.functional as F
 import csv
 
 class Trainer:
-    def __init__(self, model, device, optimizer, train_loader, test_loader, model_name='model'):
+    def __init__(self, model, device, optimizer, train_loader, test_loader, model_name='model', scheduler=None):
         self.model = model.to(device)
         self.device = device
         self.optimizer = optimizer
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.model_name = model_name
+        self.scheduler = scheduler
 
     def train_one_epoch(self):
         self.model.train()
@@ -73,6 +74,8 @@ class Trainer:
         for epoch in range(1, epochs + 1):
             train_loss, train_acc = self.train_one_epoch()
             val_loss, val_acc = self.evaluate()
+            if self.scheduler is not None:
+                self.scheduler.step()
 
             print(f"Epoch {epoch}/{epochs} — "
                   f"Train loss: {train_loss:.4f}, Train acc: {train_acc:.4f} — "
