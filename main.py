@@ -15,10 +15,12 @@ def main():
     # 加载数据
     train_loader, test_loader, train_dataset, test_dataset = get_dataloaders(128)
 
-    # 初始化模型、优化器
-    model = ResNet(20, num_classes=10).to(device)
+    # 初始化模型
+    model = ResNet(5, num_classes=10).to(device)
+    # 随机梯度下降优化器，momentum为动量项，weight_decay为权重衰减
     optimizer = torch.optim.SGD(
         model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-4)
+    # 学习率调度器，在epoch数达到时，将当前学习率乘gamma
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=[82, 123], gamma=0.1)
 
