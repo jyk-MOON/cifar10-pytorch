@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# Inception模块定义
+# 每个Inception模块会把输入同时传入四个不同的路径（分支），这四个路径是并行计算的，之后再将它们的输出在通道维度拼接起来
+# Inception模块只改变通道数，不改变图片的高和宽
 class Inception(nn.Module):
     # 参数表示：输入特征图的通道数、第一分支的输出通道数、第二分支中 1x1 卷积的输出通道数（用于降低维度）、第二分支的输出通道数
     # 第三分支中 1x1 卷积的输出通道数、第三分支的输出通道数、第四分支中 max pooling 后的输出通道数
@@ -10,6 +11,7 @@ class Inception(nn.Module):
                  ch5x5red, ch5x5, pool_proj):
         super(Inception, self).__init__()
 
+        # 1x1卷积对所有输入通道做加权求和，只跨通道，不跨空间，可以用来调整通道数
         self.branch1 = nn.Conv2d(in_channels, ch1x1, kernel_size=1)
 
         self.branch2 = nn.Sequential(
@@ -37,17 +39,17 @@ class Inception(nn.Module):
         branch2 = self.branch2(x)
         branch3 = self.branch3(x)
         branch4 = self.branch4(x)
+        # 四个分支拼接，组成新的特征图
         return torch.cat([branch1, branch2, branch3, branch4], 1)
 
 # GoogLeNet主结构
-# 每个Inception模块会把输入同时传入四个不同的路径（分支），这四个路径是并行计算的，之后再将它们的输出在通道维度拼接起来
 class GoogLeNet(nn.Module):
     def __init__(self, num_classes=10):
         super(GoogLeNet, self).__init__()
         self.pre_layers = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=3, padding=1),  # 输入：3x32x32的图片，将其变为64通道图片
+            nn.Conv2d(3, 64, kernel_size=3, padding=1),  # 输入：3x32x32的图片，将其变为64x32x32
             nn.ReLU(True),
-            nn.MaxPool2d(2, 2),  # 输出: 16x16
+            nn.MaxPool2d(2, 2),  # 输出: 16x16，最大池化缩小尺寸，加快后续运算
         )
 
         self.inception_a = Inception(64, 32, 48, 64, 8, 16, 16)  # 输出通道数: 32+64+16+16=128

@@ -7,14 +7,14 @@ class ResidualBlock(nn.Module):
         super(ResidualBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3,
                                stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(out_channels) # 批归一化层
+        self.bn1 = nn.BatchNorm2d(out_channels) # 批量归一化，加快收敛
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3,
                                stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
-        self.downsample = None
-        if stride != 1 or in_channels != out_channels:
+        self.downsample = None # 下采样分支
+        if stride != 1 or in_channels != out_channels: # 如果步长不为1，或输入输出通道不同，做1×1卷积调整通道数
             self.downsample = nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, kernel_size=1,
                           stride=stride, bias=False),
@@ -39,24 +39,25 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         assert (6 * n + 2) in [20, 32, 44, 56, 110], "depth must be 6n+2"
 
-        self.in_channels = 16  # CIFAR-10 uses initial 16 channels
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1,
+        self.in_channels = 16  # 初始通道设为16
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, # 输出：16x32x32
                                padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(16)
         self.relu = nn.ReLU(inplace=True)
 
-        # total blocks: 3 * n
+        # n = 3, 5, 7, 9, 18
+        # 主层的深度为 3 * n
         self.layer1 = self._make_layer(16, n, stride=1)   # 32x32
         self.layer2 = self._make_layer(32, n, stride=2)   # 16x16
         self.layer3 = self._make_layer(64, n, stride=2)   # 8x8
 
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1)) # 64x1
         self.fc = nn.Linear(64, num_classes)
 
     def _make_layer(self, out_channels, blocks, stride):
         layers = []
         layers.append(ResidualBlock(self.in_channels, out_channels, stride))
-        self.in_channels = out_channels
+        self.in_channels = out_channels # 上一层的输出为这一层的输入
         for _ in range(1, blocks):
             layers.append(ResidualBlock(out_channels, out_channels))
         return nn.Sequential(*layers)
