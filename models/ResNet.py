@@ -21,6 +21,8 @@ class ResidualBlock(nn.Module):
                 nn.BatchNorm2d(out_channels)
             )
 
+    # 整个模块“学习 F(x)，使得 F(x) + x 能逼近目标输出”
+    # F(x) 不是人工指定学什么，而是网络通过反向传播和优化过程自动学到的；这是一种“结构上的引导”，而非“内容上的指令”
     def forward(self, x):
         identity = x # 保存输入的x
         out = self.relu(self.bn1(self.conv1(x)))
